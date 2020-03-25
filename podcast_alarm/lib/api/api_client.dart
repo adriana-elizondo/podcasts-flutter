@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:http/http.dart';
 import 'package:http/io_client.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:podcast_alarm/data_layer/episode.dart';
 import 'package:podcast_alarm/data_layer/genre.dart';
 import 'package:podcast_alarm/data_layer/podcast.dart';
 
@@ -103,23 +104,24 @@ class ApiClient {
 
   Future<dynamic> _get(String path,
       {Map<String, String> queryParameters, String filename}) async {
+
     if (filename != null) {
+      print(filename);
       try {
-        Directory dir = await getApplicationSupportDirectory();
-        File file = File("${dir.path}/$filename");
-        if (file != null) {
-          print(file);
-          return file.readAsStringSync();
+        Directory _dir = await getApplicationSupportDirectory();
+        File _file = File("${_dir.path}/$filename");
+        if (_file != null) {
+          final String _response = await _file.readAsStringSync();
+          return await compute(decodeJson, _response);
         }
       } catch (ex) {
         print("failed to read file $filename $ex");
       }
     }
-    if (queryParameters != null) {queryParameters.addAll(_baseQueryParameters);}
     var uri = Uri.https(_baseUrl, "$_apiVersion$path", queryParameters);
     print("GET $uri");
     final Response response = await _client.get(uri, headers: _headers);
-    return _processResponse(response);
+    return _processResponse(response, filename: filename);
   }
 
   Future<dynamic> _processResponse(Response response, {String filename}) async {
@@ -141,7 +143,6 @@ class ApiClient {
         Directory dir = await getApplicationSupportDirectory();
         File file = File("${dir.path}/$filename");
         await file.writeAsString(response.body);
-        print("written $file");
       } catch (ex) {
         print("failed to write file $filename $ex");
       }
@@ -151,13 +152,21 @@ class ApiClient {
 
   // Fetch pocasts
   Future<List<Podcast>> fetchPodcasts(String query) async {
-    final resultArray = await _get("/search", queryParameters: {"q": query}, filename: Podcast.cacheFilename);
+    final parameters = _baseQueryParameters;
+    parameters.addAll({"q": query, "type": "podcast"});
+    final resultArray = await _get("/search", queryParameters: parameters, filename: Podcast.cacheFilename);
     final podcastResults = resultArray["results"];
     List<Podcast> podcastList = List<Podcast>();
     podcastResults.map((result) {
        podcastList.add(Podcast.fromJson(result));
     }).toList();
     return podcastList;
+  }
+
+  //Fetch just listen
+  Future<Podcast> fetchRandomPodcast() async {
+    final json = await _get("/just_listen", filename: Podcast.justListen);
+    return Podcast.fromJson(json);
   }
 
   //Fetch genres
@@ -169,5 +178,11 @@ class ApiClient {
       genreList.add(Genre.fromJson(json));
     }).toList();
     return genreList;
+  }
+
+  //Fetch genres
+  Future<Podcast> podcastDetails(String podcastId) async {
+    final json = await _get("/podcasts/$podcastId", queryParameters: {"sort": "recent_first"}, filename: "$podcastId-details.json");
+    return Podcast.fromJson(json);
   }
 }

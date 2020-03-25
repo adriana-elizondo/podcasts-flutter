@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:podcast_alarm/screens/genres/genre_screen.dart';
+import 'package:podcast_alarm/screens/just_listen/just_listen_screen.dart';
 import 'package:podcast_alarm/screens/podcasts/search_podcasts_screen.dart';
 
 class MainScreen extends StatefulWidget {
@@ -14,7 +15,7 @@ class _MainScreenState extends State<MainScreen> {
   @override
   void initState() {
     super.initState();
-    _tabItems = [SearchPodcastScreen(), GenreScreen()];
+    _tabItems = [SearchPodcastScreen(), GenreScreen(), JustListenScreen()];
   }
 
   @override
@@ -37,8 +38,13 @@ class _MainScreenState extends State<MainScreen> {
           ),
           BottomNavigationBarItem(
             backgroundColor: backgroundColor,
-            icon: Icon(Icons.search),
-            title: Text("Search"),
+            icon: Icon(Icons.category),
+            title: Text("Genres"),
+          ),
+          BottomNavigationBarItem(
+            backgroundColor: backgroundColor,
+            icon: Icon(Icons.play_circle_outline),
+            title: Text("Just Listen"),
           )
         ],
       ),

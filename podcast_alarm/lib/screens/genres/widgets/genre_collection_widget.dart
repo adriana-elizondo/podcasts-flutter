@@ -27,13 +27,19 @@ class GenreCollectionWidget extends StatelessWidget {
           ],),
           SizedBox(height: 20),
           Padding(
-            padding: EdgeInsets.all(16),
-            child: Wrap(
-                runSpacing: _kSpacing,
-                spacing: _kSpacing,
-                children: genreList.map((genre) {
-                  return GenreWidget(genre: genre);
-                }).toList()),
+            padding: EdgeInsets.all(10),
+            child: Container(
+              decoration: BoxDecoration(borderRadius: BorderRadius.circular(8), color: Color(0xFF2B2F48),),
+              child: Padding(
+                padding: EdgeInsets.all(16),
+                child: Wrap(
+                    runSpacing: _kSpacing,
+                    spacing: _kSpacing,
+                    children: genreList.map((genre) {
+                      return GenreWidget(genre: genre);
+                    }).toList()),
+              ),
+            ),
           )
         ],
       ),

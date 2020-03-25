@@ -11,14 +11,11 @@ class GenreScreen extends StatefulWidget {
 
 class _GenreScreenState extends State<GenreScreen> {
   final bloc = FetchGenresBloc();
-  List<Genre> _genreList;
 
   @override
   void initState() {
     super.initState();
-    if (_genreList == null) {
-      bloc.fetchGenreList();
-    }
+    bloc.fetchGenreList();
   }
 
   @override
@@ -52,12 +49,12 @@ class _GenreScreenState extends State<GenreScreen> {
 
         final results = snapshot.data;
         if (results == null) {
-          return Center(child: Text('Sory nothing here'));
+          return Center(child: CircularProgressIndicator());
+          ;
         }
         if (results.isEmpty) {
           return Center(child: Text('No Results'));
         }
-        _genreList = results;
         return GenreCollectionWidget(genreList: results);
       },
     );

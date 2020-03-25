@@ -12,14 +12,11 @@ class SearchPodcastScreen extends StatefulWidget {
 
 class _SearchPodcastScreenState extends State<SearchPodcastScreen> {
   final bloc = FetchPodcastsBloc();
-  List<Podcast> _podcastList;
 
   @override
   void initState() {
     super.initState();
-    if (_podcastList == null) {
-      bloc.fetchPodcasts();
-    }
+    bloc.fetchPodcasts();
   }
 
   @override
@@ -40,7 +37,7 @@ class _SearchPodcastScreenState extends State<SearchPodcastScreen> {
 
         final results = snapshot.data;
         if (results == null) {
-          return Center(child: Text('Sory nothing here'));
+          return Center(child: CircularProgressIndicator());
         }
         if (results.isEmpty) {
           return Center(child: Text('No Results'));
@@ -51,7 +48,6 @@ class _SearchPodcastScreenState extends State<SearchPodcastScreen> {
   }
 
   _searchScreenBackground(List<Podcast> podcastList) {
-    _podcastList = podcastList;
     return Stack(
       children: <Widget>[
         Container(
@@ -66,7 +62,13 @@ class _SearchPodcastScreenState extends State<SearchPodcastScreen> {
             elevation: 0,
             backgroundColor: Colors.transparent,
             centerTitle: false,
-            title: Text("Explore"),
+            title: Padding(
+              padding: EdgeInsets.only(left: 5),
+              child: Text(
+                "Explore",
+                style: Theme.of(context).textTheme.headline,
+              ),
+            ),
           ),
           body: PodcastCollectionWidget(podcastList: podcastList),
         ),

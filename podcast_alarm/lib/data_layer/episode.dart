@@ -1,6 +1,8 @@
 import 'package:podcast_alarm/api/api_client.dart';
 
 class Episode implements Codable {
+  static const String cacheFilename = "episode.json";
+
   String id;
   String link;
   String audio;
