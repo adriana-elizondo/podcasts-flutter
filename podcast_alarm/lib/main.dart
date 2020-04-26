@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:podcast_alarm/api/api_client.dart';
 import 'package:podcast_alarm/audio_player/audio_player_screen.dart';
-import 'package:podcast_alarm/audio_player/audio_player_widget.dart';
+import 'package:podcast_alarm/screens/just_listen/just_listen_screen.dart';
 import 'package:podcast_alarm/screens/main_screen.dart';
+import 'package:podcast_alarm/screens/podcasts/podcast_list_screen.dart';
+import 'package:podcast_alarm/screens/podcasts/widgets/podcast_tab_controller.dart';
 
 void main() => runApp(App());
 
@@ -16,7 +18,7 @@ class _AppState extends State<App> {
   @override
   void initState() {
     super.initState();
-    ApiClient.sharedInstance.setupApiClient(proxy: "192.168.8.155:8888");
+    ApiClient.sharedInstance.setupApiClient();
   }
 
   @override
@@ -58,8 +60,14 @@ class _AppState extends State<App> {
       title: 'Best alarm ever',
       theme: theme,
       home: MainScreen(),
-      routes: {
-        AudioPlayerScreen.routeName: (_) => AudioPlayerScreen()
+      onGenerateRoute: (RouteSettings settings) {
+        var routes = <String, WidgetBuilder>{
+          AudioPlayerScreen.routeName: (_) => AudioPlayerScreen(bloc: settings.arguments,),
+          PodcastListScreen.routeName: (_) => PodcastListScreen(curatedList: settings.arguments,),
+          PodcastTabController.routeName: (_) => PodcastTabController(podcast: settings.arguments,),
+        };
+        WidgetBuilder builder = routes[settings.name];
+        return MaterialPageRoute(builder: (ctx) => builder(ctx));
       },
     );
   }

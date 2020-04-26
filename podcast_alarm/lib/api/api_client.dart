@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:http/http.dart';
 import 'package:http/io_client.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:podcast_alarm/data_layer/curated_list.dart';
 import 'package:podcast_alarm/data_layer/episode.dart';
 import 'package:podcast_alarm/data_layer/genre.dart';
 import 'package:podcast_alarm/data_layer/podcast.dart';
@@ -165,8 +166,19 @@ class ApiClient {
 
   //Fetch just listen
   Future<Podcast> fetchRandomPodcast() async {
-    final json = await _get("/just_listen", filename: Podcast.justListen);
+    final json = await _get("/just_listen");
     return Podcast.fromJson(json);
+  }
+
+  //Fetch just listen
+  Future<List<CuratedList>> fetchCuratedPodcasts() async {
+    final resultArray = await _get("/curated_podcasts", filename: CuratedList.cacheFilename);
+    final curatedResults = resultArray["curated_lists"];
+    List<CuratedList> curatedLists = List<CuratedList>();
+    curatedResults.map((result) {
+      curatedLists.add(CuratedList.fromJson(result));
+    }).toList();
+    return curatedLists;
   }
 
   //Fetch genres

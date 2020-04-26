@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:podcast_alarm/bloc/bloc.dart';
 import 'package:podcast_alarm/bloc/bloc_provider.dart';
 import 'package:podcast_alarm/bloc/fetch_podcast_details_bloc.dart';
 import 'package:podcast_alarm/data_layer/podcast.dart';
@@ -8,6 +7,7 @@ import 'package:podcast_alarm/screens/podcasts/widgets/podcast_info.dart';
 
 class PodcastTabController extends StatefulWidget {
   final Podcast podcast;
+  static const routeName = "podcast_tab_controller";
 
   PodcastTabController({@required this.podcast});
 

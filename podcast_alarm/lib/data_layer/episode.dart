@@ -4,6 +4,7 @@ class Episode implements Codable {
   static const String cacheFilename = "episode.json";
 
   String id;
+  String podcast_id;
   String link;
   String audio;
   String image;

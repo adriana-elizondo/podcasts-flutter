@@ -42,11 +42,13 @@ class PodcastHeaderWidget extends StatelessWidget {
                   ),
                   Row(
                     children: <Widget>[
-                      Text(
-                        podcast.podcastPublisher,
-                        style: Theme.of(context).textTheme.caption,
-                        overflow: TextOverflow.ellipsis,
-                        maxLines: 3,
+                      Flexible(
+                        child: Text(
+                          podcast.podcastPublisher,
+                          style: Theme.of(context).textTheme.caption,
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 3,
+                        ),
                       ),
                     ],
                   ),

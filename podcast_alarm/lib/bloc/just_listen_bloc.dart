@@ -1,13 +1,14 @@
 import 'dart:async';
 import 'package:podcast_alarm/api/api_client.dart';
 import 'package:podcast_alarm/data_layer/podcast.dart';
+import 'package:rxdart/rxdart.dart';
 import 'bloc.dart';
 
 class JustListenBloc implements Bloc {
   final _controller = StreamController<Podcast>();
   final _client = ApiClient();
 
-  Stream<Podcast> get randomPodcastStream => _controller.stream;
+  BehaviorSubject<Podcast> get randomPodcastStream => _controller.stream;
 
   void fetchRandomPodcast() async {
     try {

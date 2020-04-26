@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:podcast_alarm/bloc/bloc_provider.dart';
+import 'package:podcast_alarm/bloc/just_listen_bloc.dart';
 import 'package:podcast_alarm/screens/genres/genre_screen.dart';
 import 'package:podcast_alarm/screens/just_listen/just_listen_screen.dart';
 import 'package:podcast_alarm/screens/podcasts/search_podcasts_screen.dart';
@@ -11,11 +13,21 @@ class MainScreen extends StatefulWidget {
 class _MainScreenState extends State<MainScreen> {
   int _currentIndex = 0;
   List<Widget> _tabItems;
+  final _bloc = JustListenBloc();
 
   @override
   void initState() {
     super.initState();
-    _tabItems = [SearchPodcastScreen(), GenreScreen(), JustListenScreen()];
+    _bloc.fetchRandomPodcast();
+
+    _tabItems = [
+      SearchPodcastScreen(),
+      GenreScreen(),
+      BlocProvider<JustListenBloc>(
+        bloc: _bloc,
+        child: JustListenScreen(podcastStream: _bloc.randomPodcastStream,),
+      )
+    ];
   }
 
   @override

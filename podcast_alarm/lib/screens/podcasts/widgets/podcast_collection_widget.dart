@@ -19,7 +19,7 @@ class PodcastCollectionWidget extends StatelessWidget {
                 padding: EdgeInsets.only(left: 20, top: 20),
                 child: Text("Recently updated podcasts",
                     textAlign: TextAlign.left,
-                    style: Theme.of(context).textTheme.title),
+                    style: Theme.of(context).textTheme.headline6),
               ),
             ),
           ],

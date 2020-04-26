@@ -1,149 +1,268 @@
 import 'dart:async';
-import 'package:audio/audio.dart';
+import 'dart:math';
+import 'package:cache_audio_player/cache_audio_player.dart';
 import 'package:flutter/material.dart';
+import 'package:podcast_alarm/data_layer/episode.dart';
+import 'audio_player_bloc.dart';
 
 class AudioPlayerWidget extends StatefulWidget {
-  final String url;
+  AudioPlayerBloc audioPlayerBloc;
 
-  AudioPlayerWidget({@required this.url});
+  AudioPlayerWidget({@required this.audioPlayerBloc});
 
   @override
   _AudioPlayerWidgetState createState() => _AudioPlayerWidgetState();
 }
 
 class _AudioPlayerWidgetState extends State<AudioPlayerWidget> {
-  Audio audioPlayer = new Audio(single: true);
-  AudioPlayerState state = AudioPlayerState.STOPPED;
-  double position = 0;
-  int buffering = 0;
-  StreamSubscription<AudioPlayerState> _playerStateSubscription;
-  StreamSubscription<double> _playerPositionController;
-  StreamSubscription<int> _playerBufferingSubscription;
-  StreamSubscription<AudioPlayerError> _playerErrorSubscription;
+  CacheAudioPlayer _audioPlayer;
+
+  StreamSubscription<AudioPlayerState> _stateSubscription;
+  StreamSubscription<double> _bufferSubscription;
+  StreamSubscription<double> _timeElapsedSubscription;
+  StreamSubscription<Object> _errorSubscription;
+
+  AudioPlayerState _state = AudioPlayerState.PAUSED;
+  double _bufferedPercentage = 0;
+  double _timeInSeconds = 0;
+  double _percentageOfTimeElapsed = 0;
+  int _totalDuration = 0;
+  Object _error;
+  bool _isSeekng = false;
+  double _valueToSeekTo = 0;
 
   @override
   void initState() {
-    _playerStateSubscription =
-        audioPlayer.onPlayerStateChanged.listen((AudioPlayerState state) {
-      print("onPlayerStateChanged: ${audioPlayer.uid} $state");
-
-      if (mounted) setState(() => this.state = state);
-    });
-
-    _playerPositionController =
-        audioPlayer.onPlayerPositionChanged.listen((double position) {
-      print(
-          "onPlayerPositionChanged: ${audioPlayer.uid} $position ${audioPlayer.duration}");
-
-      if (mounted) setState(() => this.position = position);
-    });
-
-    _playerBufferingSubscription =
-        audioPlayer.onPlayerBufferingChanged.listen((int percent) {
-      print("onPlayerBufferingChanged: ${audioPlayer.uid} $percent");
-
-      if (mounted && buffering != percent) setState(() => buffering = percent);
-    });
-
-    _playerErrorSubscription =
-        audioPlayer.onPlayerError.listen((AudioPlayerError error) {
-      throw ("onPlayerError: ${error.code} ${error.message}");
-    });
-
-    audioPlayer.preload(widget.url);
-
     super.initState();
+    _setup();
+  }
+
+  void _setup() {
+    _audioPlayer = CacheAudioPlayer();
+    _stateSubscription =
+        _audioPlayer.onStateChanged.listen((AudioPlayerState state) {
+          setState(() {
+            _state = state;
+          });
+        });
+    _bufferSubscription =
+        _audioPlayer.onPlayerBuffered.listen((double percentageBuffered) {
+          setState(() {
+            _bufferedPercentage = percentageBuffered;
+          });
+        });
+    _timeElapsedSubscription =
+        _audioPlayer.onTimeElapsed.listen((double timeInSeconds) {
+          setState(() {
+            _timeInSeconds = timeInSeconds;
+          });
+        });
+    _errorSubscription = _audioPlayer.onError.listen((Object error) {
+      setState(() {
+        _error = error;
+      });
+    });
+
+    widget.audioPlayerBloc.episodeStream.listen((Episode episode) {
+      print("loading again");
+      _audioPlayer.registerListeners();
+      _audioPlayer.loadUrl(episode.audio);
+    });
+  }
+
+  @override
+  void dispose() {
+    _resetValues();
+    _stateSubscription.cancel();
+    _bufferSubscription.cancel();
+    _errorSubscription.cancel();
+    _timeElapsedSubscription.cancel();
+    super.dispose();
+  }
+
+  void _resetValues() {
+    _bufferedPercentage = 0;
+    _state = AudioPlayerState.PAUSED;
+    _timeInSeconds = 0;
+    _percentageOfTimeElapsed = 0;
+    _totalDuration = 0;
+    _error = null;
+    _isSeekng = false;
+    _valueToSeekTo = 0;
+    _audioPlayer.stop();
+    _audioPlayer.unregisterListeners();
   }
 
   @override
   Widget build(BuildContext context) {
-    Widget status = Container();
-    print("[build] uid=${audioPlayer.uid} duration=${audioPlayer.duration} state=$state");
-
-    switch (state) {
-      case AudioPlayerState.LOADING:
-        {
-          status = Container(
-              padding: const EdgeInsets.all(12.0),
-              child: Container(
-                width: 24.0,
-                height: 24.0,
-                child: Center(
-                    child: Stack(
-                  alignment: AlignmentDirectional.center,
-                  children: <Widget>[
-                    CircularProgressIndicator(strokeWidth: 2.0),
-                    Text("${buffering}%",
-                        style: TextStyle(fontSize: 8.0),
-                        textAlign: TextAlign.center)
-                  ],
-                )),
-              ));
-          break;
-        }
-
-      case AudioPlayerState.PLAYING:
-        {
-          status = IconButton(
-              icon: Icon(Icons.pause, size: 28.0), onPressed: onPause);
-          break;
-        }
-
-      case AudioPlayerState.READY:
-      case AudioPlayerState.PAUSED:
-      case AudioPlayerState.STOPPED:
-        {
-          status = IconButton(
-              icon: Icon(Icons.play_arrow, size: 28.0), onPressed: onPlay);
-
-          if (state == AudioPlayerState.STOPPED) audioPlayer.seek(0.0);
-
-          break;
-        }
+    if (_state == AudioPlayerState.PLAYING ||
+        _isSeekng ||
+        _state == AudioPlayerState.FINISHED) {
+      _updateSliderValue();
     }
+    return _playerContainer();
+  }
 
+  _playerContainer() {
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 32.0, horizontal: 16.0),
       child: Column(
         children: <Widget>[
-          Text(audioPlayer.uid),
+          Slider(
+            onChangeEnd: (double value) {
+              _valueToSeekTo = value;
+              _isSeekng = true;
+              _audioPlayer.seek(value).catchError((Object error) {
+                setState(() {
+                  _isSeekng = false;
+                  _error = error;
+                });
+              });
+            },
+            onChanged: (value) {},
+            value: _percentageOfTimeElapsed,
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text("${formattedTime(_timeInSeconds)}"),
+              Text("-${formattedTime(_totalDuration - _timeInSeconds)}"),
+            ],
+          ),
+          SizedBox(
+            height: 20,
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: <Widget>[
+              SizedBox(
+                width: 30,
+              ),
+              IconButton(
+                iconSize: 50,
+                color: Colors.white,
+                icon: Icon(Icons.skip_previous),
+                onPressed: () {
+                  _loadPrevious();
+                },
+              ),
+              IconButton(
+                iconSize: 60,
+                color: Colors.white,
+                icon: _icon(),
+                onPressed: () {
+                  _onPressed();
+                },
+              ),
+              IconButton(
+                iconSize: 50,
+                color: Colors.white,
+                icon: Icon(Icons.skip_next),
+                onPressed: () {
+                  _loadNext();
+                },
+              ),
+              SizedBox(
+                width: 30,
+              ),
+            ],
+          ),
+          SizedBox(
+            height: 20,
+          ),
           Row(
             children: <Widget>[
-              status,
-//              Slider(
-//                min: 0.0,
-//                max: audioPlayer.duration.toDouble(),
-//                value: position.toDouble(),
-//                onChanged: onSeek,
-//              ),
-              Text("${audioPlayer.duration.toDouble()}ms")
+              Text("Buffer: $_bufferedPercentage"),
             ],
-          )
+          ),
+          _error == null ? SizedBox() : Text("there was an error $_error"),
         ],
       ),
     );
   }
 
-  @override
-  void dispose() {
-    _playerStateSubscription.cancel();
-    _playerPositionController.cancel();
-    _playerBufferingSubscription.cancel();
-    _playerErrorSubscription.cancel();
-    audioPlayer.release();
-    super.dispose();
+  _loadPrevious() {
+    _resetValues();
+    widget.audioPlayerBloc.previousEpisode();
+  }
+
+  _loadNext() {
+    _resetValues();
+    widget.audioPlayerBloc.nextEpisode();
+  }
+
+  String formattedTime(double time) {
+    return Duration(seconds: time.toInt())
+        .toString()
+        .split('.')
+        .first
+        .padLeft(8, "0");
+    ;
+  }
+
+  Icon _icon() {
+    switch (_state) {
+      case AudioPlayerState.PLAYING:
+        return Icon(Icons.pause);
+      case AudioPlayerState.READYTOPLAY:
+      case AudioPlayerState.BUFFERING:
+      case AudioPlayerState.PAUSED:
+      case AudioPlayerState.FINISHED:
+        return Icon(Icons.play_arrow);
+      default:
+        return Icon(Icons.error);
+    }
+  }
+
+  _onPressed() {
+    switch (_state) {
+      case AudioPlayerState.PLAYING:
+        return _audioPlayer.stop();
+      case AudioPlayerState.READYTOPLAY:
+      case AudioPlayerState.BUFFERING:
+      case AudioPlayerState.PAUSED:
+        return _audioPlayer.play();
+      case AudioPlayerState.FINISHED:
+        _percentageOfTimeElapsed = 0;
+        _timeInSeconds = 0;
+        return _audioPlayer.play();
+      default:
+        {}
+    }
+  }
+
+  _updateSliderValue() {
+    if (_state == AudioPlayerState.FINISHED) {
+      _percentageOfTimeElapsed = 0;
+      return;
+    }
+    if (_totalDuration == 0) {
+      _audioPlayer.lengthInseconds().then((totalDuration) {
+        _totalDuration = totalDuration.toInt();
+      }).catchError((error) {
+        _error = error;
+      });
+    } else {
+      if (_isSeekng) {
+        _isSeekng = false;
+        final double value = _valueToSeekTo;
+        _valueToSeekTo = 0;
+        _percentageOfTimeElapsed = value;
+      } else {
+        _percentageOfTimeElapsed = min(_timeInSeconds / _totalDuration, 1.0);
+      }
+    }
   }
 
   onPlay() {
-    audioPlayer.play(widget.url);
+    _audioPlayer.play();
   }
 
   onPause() {
-    audioPlayer.pause();
+    _audioPlayer.stop();
   }
 
   onSeek(double value) {
     // Note: We can only seek if the audio is ready
-    audioPlayer.seek(value);
+    _audioPlayer.seek(value);
   }
 }

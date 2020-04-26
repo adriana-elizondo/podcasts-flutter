@@ -1,5 +1,5 @@
 PODS:
-  - audio (0.0.1):
+  - cache_audio_player (0.0.1):
     - Flutter
   - Flutter (1.0.0)
   - path_provider (0.0.1):
@@ -8,14 +8,14 @@ PODS:
     - Flutter
 
 DEPENDENCIES:
-  - audio (from `.symlinks/plugins/audio/ios`)
+  - cache_audio_player (from `.symlinks/plugins/cache_audio_player/ios`)
   - Flutter (from `Flutter`)
   - path_provider (from `.symlinks/plugins/path_provider/ios`)
   - path_provider_macos (from `.symlinks/plugins/path_provider_macos/ios`)
 
 EXTERNAL SOURCES:
-  audio:
-    :path: ".symlinks/plugins/audio/ios"
+  cache_audio_player:
+    :path: ".symlinks/plugins/cache_audio_player/ios"
   Flutter:
     :path: Flutter
   path_provider:
@@ -24,11 +24,11 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/path_provider_macos/ios"
 
 SPEC CHECKSUMS:
-  audio: 6248a8deab3e7b361aed465b1568bac4515b174a
+  cache_audio_player: 24c7dbd480b7c612f2f229d6a5748ab4ffe7009f
   Flutter: 0e3d915762c693b495b44d77113d4970485de6ec
   path_provider: fb74bd0465e96b594bb3b5088ee4a4e7bb1f2a9d
   path_provider_macos: f760a3c5b04357c380e2fddb6f9db6f3015897e0
 
 PODFILE CHECKSUM: 1b66dae606f75376c5f2135a8290850eeb09ae83
 
-COCOAPODS: 1.9.0.beta.2
+COCOAPODS: 1.9.1
