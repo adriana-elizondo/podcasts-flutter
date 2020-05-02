@@ -7,7 +7,7 @@ import 'bloc.dart';
 
 class FetchPodcastDetailsBloc implements Bloc {
   final _episodeController = StreamController<List<Episode>>();
-  final _podcastDetailsController = StreamController<Podcast>();
+  final _podcastDetailsController = BehaviorSubject<Podcast>();
   final _client = ApiClient();
   Podcast _podcast;
 
@@ -17,7 +17,6 @@ class FetchPodcastDetailsBloc implements Bloc {
   void fetchDetailsForPodcast(String podcastId) async {
     try {
       final podcast = await _client.podcastDetails(podcastId);
-      print("adding to sink");
       _podcastDetailsController.sink.add(podcast);
     } catch (e) {
       _podcastDetailsController.sink.addError(e);

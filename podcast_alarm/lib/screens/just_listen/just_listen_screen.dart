@@ -2,11 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:podcast_alarm/data_layer/podcast.dart';
 import 'package:podcast_alarm/screens/podcasts/widgets/podcast_tab_controller.dart';
 import 'package:podcast_alarm/screens/podcasts/widgets/podcast_header_widget.dart';
-import 'package:rxdart/rxdart.dart';
 
 class JustListenScreen extends StatelessWidget {
   static const routeName = "just_listen_screen";
-  final BehaviorSubject<Podcast> podcastStream;
+  final Stream<Podcast> podcastStream;
 
   JustListenScreen({@required this.podcastStream});
 
@@ -30,7 +29,6 @@ class JustListenScreen extends StatelessWidget {
           if (podcast == null) {
             return Center(child: CircularProgressIndicator());
           }
-
           return Column(
             mainAxisAlignment: MainAxisAlignment.start,
             children: <Widget>[

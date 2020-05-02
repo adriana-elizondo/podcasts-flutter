@@ -19,7 +19,6 @@ class _PodcastTabControllerState extends State<PodcastTabController>
     with SingleTickerProviderStateMixin {
   final List<Tab> _tabs = <Tab>[
     Tab(text: 'Episodes'),
-    Tab(text: 'Info'),
   ];
   TabController _tabController;
   final _bloc = FetchPodcastDetailsBloc();
@@ -28,7 +27,7 @@ class _PodcastTabControllerState extends State<PodcastTabController>
   void initState() {
     super.initState();
     _tabController = TabController(vsync: this, length: _tabs.length);
-    _bloc.fetchDetailsForPodcast(widget.podcast.podcast_id);
+    _bloc.fetchDetailsForPodcast(widget.podcast.podcast_id ?? widget.podcast.id);
   }
 
   @override
@@ -60,7 +59,6 @@ class _PodcastTabControllerState extends State<PodcastTabController>
             }
             return TabBarView(controller: _tabController, children: [
               EpisodesList(podcast: snapshot.data),
-              PodcastInfo(podcast: snapshot.data),
             ]);
           },
         ),

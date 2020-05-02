@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:podcast_alarm/bloc/fetch_podcast_details_bloc.dart';
 import 'package:podcast_alarm/data_layer/podcast.dart';
+import 'package:podcast_alarm/screens/just_listen/just_listen_screen.dart';
 
 class PodcastCard extends StatelessWidget {
   final Podcast podcast;
@@ -9,6 +11,7 @@ class PodcastCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final _bloc = FetchPodcastDetailsBloc();
     final screenWidth = MediaQuery.of(context).size.width;
     return Card(
       shape: RoundedRectangleBorder(
@@ -16,8 +19,8 @@ class PodcastCard extends StatelessWidget {
       ),
       elevation: 4,
       child: Container(
-        height: 200,
-        width: screenWidth - 2 * kSpacing,
+        height: 160,
+        width: 300,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(8),
         ),
@@ -65,11 +68,16 @@ class PodcastCard extends StatelessWidget {
                         color: Colors.transparent,
                         child: Ink.image(
                           image: AssetImage('images/play_button.png'),
-                          fit: BoxFit.cover,
-                          width: 50.0,
-                          height: 50.0,
+                          fit: BoxFit.fill,
+                          width: 30.0,
+                          height: 30.0,
                           child: InkWell(
-                            onTap: () {},
+                            onTap: () {
+                              _bloc.fetchDetailsForPodcast(podcast.id);
+                              Navigator.of(context).pushNamed(
+                                  JustListenScreen.routeName,
+                                  arguments: _bloc.podcastStream);
+                            },
                           ),
                         ),
                       )

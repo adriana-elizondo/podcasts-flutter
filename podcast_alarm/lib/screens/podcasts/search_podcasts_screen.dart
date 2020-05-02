@@ -5,6 +5,7 @@ import 'package:podcast_alarm/bloc/fetch_podcasts_bloc.dart';
 import 'package:podcast_alarm/data_layer/curated_list.dart';
 import 'package:podcast_alarm/data_layer/podcast.dart';
 import 'package:podcast_alarm/global/polygon_painter.dart';
+import 'package:podcast_alarm/global/search_list_delegate.dart';
 import 'package:podcast_alarm/screens/podcasts/widgets/pocast_curated_listview.dart';
 import 'package:podcast_alarm/screens/podcasts/widgets/podcast_collection_widget.dart';
 
@@ -20,7 +21,7 @@ class _SearchPodcastScreenState extends State<SearchPodcastScreen> {
   @override
   void initState() {
     super.initState();
-    _fetchPodcastsBloc.fetchPodcasts();
+    _fetchPodcastsBloc.fetchPodcasts(true);
     _fetchCuratedListsBloc.fetchCuratedLists();
   }
 
@@ -40,6 +41,22 @@ class _SearchPodcastScreenState extends State<SearchPodcastScreen> {
             elevation: 0,
             backgroundColor: Colors.transparent,
             centerTitle: false,
+            actions: [
+              Padding(
+                  padding: EdgeInsets.only(right: 20.0),
+                  child: GestureDetector(
+                    onTap: () {
+                      showSearch(
+                        context: context,
+                        delegate: SearchListDelegate(_fetchPodcastsBloc),
+                      );
+                    },
+                    child: Icon(
+                      Icons.search,
+                      size: 26.0,
+                    ),
+                  )),
+            ],
             title: Padding(
               padding: EdgeInsets.only(left: 5),
               child: Text(

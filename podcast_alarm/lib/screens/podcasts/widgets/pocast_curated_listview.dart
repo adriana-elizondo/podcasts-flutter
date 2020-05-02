@@ -13,6 +13,7 @@ class CuratedPocastsList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListView.builder(
+      itemCount: curatedList.length,
       itemBuilder: (ctx, index) {
         return _curatedCard(ctx, curatedList[index]);
       },

@@ -72,13 +72,13 @@ class AudioPlayerScreen extends StatelessWidget {
       decoration: BoxDecoration(
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.5),
-            blurRadius: 5,
+            color: Colors.black.withOpacity(0.3),
+            blurRadius: 2,
           ),
         ],
         color: Colors.transparent,
         image: DecorationImage(
-          fit: BoxFit.scaleDown,
+          fit: BoxFit.fill,
           image: NetworkImage(episode.image),
         ),
       ),

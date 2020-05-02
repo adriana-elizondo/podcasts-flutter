@@ -1,7 +1,13 @@
 import 'package:podcast_alarm/api/api_client.dart';
-import 'package:podcast_alarm/data_layer/curated_list.dart';
+import 'package:podcast_alarm/global/item_tile.dart';
 
-class Podcast implements Codable {
+class Podcast implements Listable {
+  @override
+  String listImageUrl;
+
+  @override
+  String listName;
+
   static const String cacheFilename = "podcast.json";
   static const String justListen = "just_listen.json";
 
@@ -69,6 +75,8 @@ class Podcast implements Codable {
     explicit_content = json['explicit_content'];
     link = json['link'];
     episodes = json['episodes'];
+    listImageUrl = json['thumbnail'];
+    listName = json['title_original'] ?? json['title'];
   }
 
   @override

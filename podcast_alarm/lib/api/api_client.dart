@@ -6,7 +6,6 @@ import 'package:http/http.dart';
 import 'package:http/io_client.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:podcast_alarm/data_layer/curated_list.dart';
-import 'package:podcast_alarm/data_layer/episode.dart';
 import 'package:podcast_alarm/data_layer/genre.dart';
 import 'package:podcast_alarm/data_layer/podcast.dart';
 
@@ -125,6 +124,11 @@ class ApiClient {
     return _processResponse(response, filename: filename);
   }
 
+  Future<StreamedResponse> downloadFileToPath(String fileUrl, String id) async {
+    final request = Request('GET', Uri.parse(fileUrl));
+    return Client().send(request);
+  }
+
   Future<dynamic> _processResponse(Response response, {String filename}) async {
     if (response.statusCode < 200 || response.statusCode >= 400) {
       ApiError apiError;
@@ -152,10 +156,10 @@ class ApiClient {
   }
 
   // Fetch pocasts
-  Future<List<Podcast>> fetchPodcasts(String query) async {
+  Future<List<Podcast>> fetchPodcasts(String query, bool fromCache) async {
     final parameters = _baseQueryParameters;
     parameters.addAll({"q": query, "type": "podcast"});
-    final resultArray = await _get("/search", queryParameters: parameters, filename: Podcast.cacheFilename);
+    final resultArray = await _get("/search", queryParameters: parameters, filename: fromCache ? Podcast.cacheFilename : null);
     final podcastResults = resultArray["results"];
     List<Podcast> podcastList = List<Podcast>();
     podcastResults.map((result) {

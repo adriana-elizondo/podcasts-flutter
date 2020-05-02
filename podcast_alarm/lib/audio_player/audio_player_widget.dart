@@ -1,7 +1,9 @@
 import 'dart:async';
+import 'dart:io';
 import 'dart:math';
 import 'package:cache_audio_player/cache_audio_player.dart';
 import 'package:flutter/material.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:podcast_alarm/data_layer/episode.dart';
 import 'audio_player_bloc.dart';
 
@@ -64,10 +66,25 @@ class _AudioPlayerWidgetState extends State<AudioPlayerWidget> {
     });
 
     widget.audioPlayerBloc.episodeStream.listen((Episode episode) {
-      print("loading again");
       _audioPlayer.registerListeners();
-      _audioPlayer.loadUrl(episode.audio);
+      _setupWithUrl(episode);
     });
+  }
+
+  Future<Directory> _downloadsDirectory() async {
+    Directory dir = await getApplicationSupportDirectory();
+    return Directory("${dir.path}/downloads/");
+  }
+
+  _setupWithUrl(Episode episode) async {
+    Directory downloadsDir = await _downloadsDirectory();
+    bool exists = await File("${downloadsDir.path}${episode.id}.mp3").exists();
+    print("exists $exists");
+    if (exists) {
+      _audioPlayer.loadFromFile("${downloadsDir.path}${episode.id}.mp3");
+    } else {
+      _audioPlayer.loadUrl(episode.audio);
+    }
   }
 
   @override

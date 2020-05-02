@@ -1,6 +1,13 @@
 import 'package:podcast_alarm/api/api_client.dart';
+import 'package:podcast_alarm/global/item_tile.dart';
 
-class Genre implements Codable {
+class Genre implements Listable {
+  @override
+  String listImageUrl = null;
+
+  @override
+  String listName;
+
   static const String cacheFilename = "genres.json";
   int id;
   String name;
@@ -12,6 +19,7 @@ class Genre implements Codable {
     id = json["id"];
     parent_id = json["parent_id"];
     name = json["name"];
+    listName = json["name"];
   }
 
   @override
@@ -28,3 +36,4 @@ class Genre implements Codable {
     return Genre.fromJson(json);
   }
 }
+

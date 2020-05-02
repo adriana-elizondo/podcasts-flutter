@@ -1,18 +1,21 @@
 import 'package:flutter/material.dart';
+import 'package:podcast_alarm/bloc/genre_details_bloc.dart';
 import 'package:podcast_alarm/data_layer/podcast.dart';
+import 'package:podcast_alarm/screens/podcasts/widgets/podcast_info.dart';
 
 class PodcastHeaderWidget extends StatelessWidget {
   final Podcast podcast;
-
+  final _genreBloc = GenreDetailsBloc();
+  
   PodcastHeaderWidget({@required this.podcast});
 
   @override
   Widget build(BuildContext context) {
+    _genreBloc.getGenresFromIds(podcast.genre_ids);
     final _height = MediaQuery.of(context).size.height / 4;
     return Container(
       height: _height,
-      decoration:
-      BoxDecoration(color: Theme.of(context).secondaryHeaderColor),
+      decoration: BoxDecoration(color: Theme.of(context).secondaryHeaderColor),
       child: Padding(
         padding: EdgeInsets.all(30),
         child: Row(
@@ -29,7 +32,7 @@ class PodcastHeaderWidget extends StatelessWidget {
                     children: <Widget>[
                       Flexible(
                         child: Text(
-                          podcast.podcastTitle,
+                          podcast.podcastTitle ?? podcast.title,
                           style: Theme.of(context).textTheme.subtitle,
                           overflow: TextOverflow.ellipsis,
                           maxLines: 3,
@@ -52,6 +55,7 @@ class PodcastHeaderWidget extends StatelessWidget {
                       ),
                     ],
                   ),
+                  PodcastInfo(genreStream: _genreBloc.genresStream,),
                 ],
               ),
             ),
@@ -74,7 +78,7 @@ class PodcastHeaderWidget extends StatelessWidget {
         ],
         color: Colors.transparent,
         image: DecorationImage(
-          fit: BoxFit.cover,
+          fit: BoxFit.fill,
           image: NetworkImage(podcast.image),
         ),
       ),
